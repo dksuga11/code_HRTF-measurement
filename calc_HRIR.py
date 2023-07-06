@@ -15,12 +15,12 @@ def calc_IR(y):
         hrir(ndarray):インパルス応答
     """
     inv_swept = mss.swept_sine(flag=-1)
-    # swept = mss.swept_sine(flag=1)
-    # t_sync = util.sync_time_difference(y, swept)
-    # hrir = np.convolve(y[t_sync:], inv_swept)
-    hrir = np.convolve(y, inv_swept)
-    hrir = hrir / np.max(np.abs(hrir))
-    return hrir
+    swept = mss.swept_sine(flag=1)
+    t_sync = util.sync_time_difference(y, swept)
+    ir = np.convolve(y[t_sync:], inv_swept)
+    ir = np.convolve(y, inv_swept)
+    ir = ir / np.max(np.abs(ir))
+    return ir
 
 
 def calc_HRIR(ir_ear, ir_center, fs):
@@ -32,15 +32,18 @@ def calc_HRIR(ir_ear, ir_center, fs):
     Return:
         hrir: 頭部インパルス応答
     """
-    t_sync_ear_bigin = int(np.argmax(np.abs(ir_ear)) - fs * 0.3)
-    t_sync_ear_end = int(np.argmax(np.abs(ir_ear)) + fs * 0.7)
-    t_sync_center_bigin = int(np.argmax(np.abs(ir_center)) - fs * 0.3)
-    t_sync_center_end = int(np.argmax(np.abs(ir_center)) + fs * 0.7)
+    t_sync_ear_bigin = int(np.argmax(np.abs(ir_ear)) - 50)
+    t_sync_ear_end = int(np.argmax(np.abs(ir_ear)) + 128)
+    t_sync_center_bigin = int(np.argmax(np.abs(ir_center)) - 50)
+    t_sync_center_end = int(np.argmax(np.abs(ir_center)) + 128)
+    temp = 512-(50+128)
+    zeros = np.zeros(temp)
+    ir_ear = np.append(ir_ear[t_sync_ear_bigin:t_sync_ear_end], zeros)
+    ir_center = np.append(ir_center[t_sync_center_bigin:t_sync_center_end], zeros)
 
-    Hrtf = np.fft.fft(ir_ear[t_sync_ear_bigin:t_sync_ear_end]) / np.fft.fft(
-        ir_center[t_sync_center_bigin:t_sync_center_end]
-    )
+    Hrtf = np.fft.fft(ir_ear) / np.fft.fft(ir_center)
     hrir = np.real(np.fft.ifft(Hrtf))
+    hrir = hrir / np.max(np.abs(hrir))
 
     return hrir
 
@@ -49,6 +52,7 @@ def plot_impuls(y, folderpath, filename):
     os.makedirs(f"{folderpath}/image", exist_ok=True)
     plt.figure(figsize=[6.0, 4.0])
     plt.plot(y)
+    plt.ylim([-1*np.max(np.abs(y)) ,np.max(np.abs(y))])
     plt.title(f"implus_responce_{filename}")
     plt.savefig(f"{folderpath}/image/{filename}.png")
 
@@ -68,7 +72,8 @@ if __name__ == "__main__":
     - .png
         - .wavの波形(5つ)
     注意:
-    - フォルダに入れる左右の測定信号のファイル名は，左耳での測定信号なら「recorded_ear-l.wav」，右耳での測定信号なら「recorded_ear-r.wav」，
+    - フォルダに入れる左右の測定信号のファイル名は，左耳での測定信号なら「recorded_ear-l.wav」，
+      右耳での測定信号なら「recorded_ear-r.wav」，
       頭部の中心にあたる位置での測定信号なら「recorded_center.wav」とする
     """
 
