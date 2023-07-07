@@ -19,8 +19,23 @@ def calc_IR(y):
     t_sync = util.sync_time_difference(y, swept)
     ir = np.convolve(y[t_sync:], inv_swept)
     ir = np.convolve(y, inv_swept)
-    ir = ir / np.max(np.abs(ir))
     return ir
+
+def find_IR(y_l, y_r, y_center):
+    ir_ear_l = calc_IR(y_l)
+    ir_ear_r = calc_IR(y_r)
+    ir_center = calc_IR(y_center)
+
+    ir_l_max = np.max(np.abs(ir_ear_l))
+    ir_r_max = np.max(np.abs(ir_ear_r))
+    ir_center_max = np.max(np.abs(ir_center))
+    max = np.max([ir_l_max, ir_r_max, ir_center_max])
+
+    ir_ear_l = ir_ear_l / max
+    ir_ear_r = ir_ear_r / max
+    ir_center = ir_center / max
+
+    return ir_ear_l, ir_ear_r, ir_center
 
 
 def calc_HRIR(ir_ear, ir_center, fs):
@@ -52,7 +67,8 @@ def plot_impuls(y, folderpath, filename):
     os.makedirs(f"{folderpath}/image", exist_ok=True)
     plt.figure(figsize=[6.0, 4.0])
     plt.plot(y)
-    plt.ylim([-1*np.max(np.abs(y)) ,np.max(np.abs(y))])
+    plt.ylim([-1*np.max(np.abs(y)), np.max(np.abs(y))])
+    # plt.ylim([-1.2 ,1.2])
     plt.title(f"implus_responce_{filename}")
     plt.savefig(f"{folderpath}/image/{filename}.png")
 
@@ -87,9 +103,7 @@ if __name__ == "__main__":
     y_center, _ = sf.read(f"{folderpath}/recorded_center.wav")
 
     # 耳元と頭部中心あたる位置のインパルス応答の計算と出力
-    ir_ear_l = calc_IR(y_l)
-    ir_ear_r = calc_IR(y_r)
-    ir_center = calc_IR(y_center)
+    ir_ear_l, ir_ear_r, ir_center = find_IR(y_l, y_r, y_center)
 
     plot_impuls(ir_ear_l, folderpath, filename="ir_ear-l")
     plot_impuls(ir_ear_r, folderpath, filename="ir_ear-r")
