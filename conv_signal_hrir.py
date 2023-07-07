@@ -20,15 +20,15 @@ def conv_signal_and_hrir(sig, hrir):
 
 
 if __name__ == "__main__":
-    """左右の耳元のインパルス応答を信号に畳み込んで，信号に残響を乗せるプログラム
+    """左右の耳元の頭部インパルス応答を信号に畳み込んで，ステレオ音を生成するプログラム
     使い方:
-        python conv_signal_ir.py {頭部インパルス応答を含んだフォルダのパス} {残響を乗せる音のファイルパス}
-        例 -> python conv_signal_ir.py sp-l sound_source/piano.wav
+        python conv_signal_hrir.py {頭部インパルス応答を含んだフォルダのパス} {畳み込む音のファイルパス}
+        例 -> python conv_signal_hrir.py sp-l sound_source/piano.wav
         オプション引数として最後に｛--ext npy｝を追加することで，バイナリファイルで保存したhiriを使うことも可能
-        例 -> python conv_signal_ir.py sp-l sound_source/piano.wav --ext npy
+        例 -> python conv_signal_hrir.py sp-l sound_source/piano.wav --ext npy
     注意:
         - 入力する頭部インパルス応答のファイル名は，calc_HRIR.pyで出力した名前を使用
-        - 残響を乗せる音はモノラル限定
+        - 入力する音はモノラル限定
     """
     perser = argparse.ArgumentParser()
     perser.add_argument("folderpath", type=str)
