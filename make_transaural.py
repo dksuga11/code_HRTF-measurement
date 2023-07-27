@@ -6,7 +6,7 @@ import os
 import util
 
 
-def make_transaural_filter(H_ll, H_lr, H_rl, H_rr):
+def make_transaural_filter(H_ll, H_rl, H_lr, H_rr):
     """トランスオーラルの生成に必要なフィルタを生成する
     Args:
         H_ll(ndarray): 左スピーカから左耳のまでのHRTF
